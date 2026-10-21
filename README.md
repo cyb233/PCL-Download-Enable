@@ -2,6 +2,8 @@
 
 这是一个同目录启动器，用于启动 `Plain Craft Launcher 2.exe` 时将 `RestrictMcDownload` 改为 `False`，并恢复下载页使用正常的 Minecraft 列表加载器。
 
+https://github.com/Meloong-Git/PCL/discussions/9512
+
 > 当前确定适配版本 `2.99.0.0`
 
 ![PCL2](./image.png)
