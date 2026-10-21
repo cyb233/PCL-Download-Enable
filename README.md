@@ -26,10 +26,11 @@ PCL-Download-Enable.exe --target "D:\PCL\Plain Craft Launcher 2.exe"
 
 ### 开发环境
 
-- .NET 8
+- .NET Framework 4.8
+  > [与 PCL2 需求一致](https://shimo.im/docs/qKPttVvXKqPD8YDC#:~:text=%E4%B8%8B%E8%BD%BD%E5%B9%B6%E5%AE%89%E8%A3%85%20.NET%20Framework%204.8)
 
 ```powershell
-./publish.ps1
+dotnet build PclDownloadEnable.csproj -c Release
 ```
 
-发布会生成两个单文件：`PCL-Download-Enable.exe` 为自包含版本，无需安装 .NET；`PCL-Download-Enable.Net8.exe` 为框架依赖版本，需要系统安装 .NET 8 x64，体积更小。两者处理和启动的 PCL 仍然是 x86 程序。
+构建会生成单个 .NET Framework 4.8 单文件：`PCL-Download-Enable.exe`。`Mono.Cecil` 已在 Release 构建时合并进 exe，运行时只依赖系统已安装的 .NET Framework 4.8。

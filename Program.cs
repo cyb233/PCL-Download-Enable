@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -48,7 +52,7 @@ internal static class Program
             }
             if (arg.StartsWith("--target=", StringComparison.OrdinalIgnoreCase))
             {
-                source = arg[9..];
+                source = arg.Substring(9);
                 if (string.IsNullOrWhiteSpace(source)) throw new ArgumentException("--target= 后缺少目标程序路径。");
                 continue;
             }
@@ -82,7 +86,8 @@ internal static class Program
         TryDelete(temp);
         assembly.Write(temp, new WriterParameters { WriteSymbols = false });
         assembly.Dispose();
-        File.Move(temp, output, true);
+        if (File.Exists(output)) File.Delete(output);
+        File.Move(temp, output);
     }
 
     private static void PatchLoader(IReadOnlyCollection<TypeDefinition> types)
@@ -122,7 +127,7 @@ internal static class Program
         var toList = versionType.Methods.First(m => m.Name == "ToListItem" && m.Parameters.Count == 3);
         var listClick = types.First(t => t.Name == "ClickEventHandler" && t.DeclaringType?.Name == "MyListItem").Methods.First(m => m.IsConstructor && m.Parameters.Count == 2);
         var iconClick = types.First(t => t.Name == "ClickEventHandler" && t.DeclaringType?.Name == "MyIconButton").Methods.First(m => m.IsConstructor && m.Parameters.Count == 2);
-        var versionLocal = method.Body.Variables.First(v => v.VariableType.FullName.Contains("ResourceVersion", StringComparison.Ordinal));
+        var versionLocal = method.Body.Variables.First(v => v.VariableType.FullName.IndexOf("ResourceVersion", StringComparison.Ordinal) >= 0);
         var branchNormal = Instruction.Create(OpCodes.Bne_Un_S, normal);
         var branchAdd = Instruction.Create(OpCodes.Br_S, add);
         var injected = new List<Instruction>
@@ -200,7 +205,7 @@ internal static class Program
 
     private static void PatchForm(IReadOnlyCollection<TypeDefinition> types)
     {
-        var method = types.SelectMany(t => t.Methods).First(m => m.HasBody && m.DeclaringType.FullName.Contains("FormMain", StringComparison.Ordinal) && m.Body.Instructions.Any(i => i.OpCode == OpCodes.Ldstr && (string?)i.Operand == Message) && m.Body.Instructions.Any(i => i.Operand is MethodReference r && r.Name == "CompareString"));
+        var method = types.SelectMany(t => t.Methods).First(m => m.HasBody && m.DeclaringType.FullName.IndexOf("FormMain", StringComparison.Ordinal) >= 0 && m.Body.Instructions.Any(i => i.OpCode == OpCodes.Ldstr && (string?)i.Operand == Message) && m.Body.Instructions.Any(i => i.Operand is MethodReference r && r.Name == "CompareString"));
         var index = method.Body.Instructions.ToList().FindIndex(i => i.OpCode == OpCodes.Ldstr && (string?)i.Operand == Message);
         var branch = method.Body.Instructions[index + 3];
         if (branch.OpCode == OpCodes.Brtrue_S || branch.OpCode == OpCodes.Brtrue) branch.OpCode = OpCodes.Br_S;

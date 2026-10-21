@@ -17,14 +17,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Publish single-file executables
+      - name: Build .NET Framework 4.8 executable
         shell: pwsh
-        run: ./publish.ps1 -OutputPath publish
+        run: |
+          dotnet build PclDownloadEnable.csproj --configuration Release
+          New-Item -ItemType Directory -Path publish -Force | Out-Null
+          Copy-Item bin/Release/net48/PCL-Download-Enable.exe publish/PCL-Download-Enable.exe
 
       - name: Prepare release metadata
         id: metadata
@@ -47,7 +45,6 @@ jobs:
         run: |
           gh release create "${{ steps.metadata.outputs.tag }}" `
             publish/PCL-Download-Enable.exe `
-            publish/PCL-Download-Enable.Net8.exe `
             --title "${{ steps.metadata.outputs.title }}" `
             --generate-notes
 
@@ -58,7 +55,6 @@ jobs:
         run: |
           gh release create "${{ steps.metadata.outputs.tag }}" `
             publish/PCL-Download-Enable.exe `
-            publish/PCL-Download-Enable.Net8.exe `
             --title "${{ steps.metadata.outputs.title }}" `
             --target "${{ github.sha }}" `
             --prerelease `
