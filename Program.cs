@@ -6,7 +6,6 @@ using Mono.Cecil.Cil;
 internal static class Program
 {
     private const string Target = "Plain Craft Launcher 2.exe";
-    private const string Patched = "Plain Craft Launcher 2.pcl-download.exe";
     private const string Message = "为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……";
 
     private static int Main(string[] args)
@@ -16,8 +15,9 @@ internal static class Program
         catch (ArgumentException ex) { return Fail(ex.Message); }
 
         var dir = Path.GetDirectoryName(source)!;
-        var output = Path.Combine(dir, Patched);
+        var output = GetPatchPath(source);
         if (!File.Exists(source)) return Fail($"未找到目标程序：{source}");
+        if (string.Equals(source, output, StringComparison.OrdinalIgnoreCase)) return Fail("目标程序不能是补丁副本。");
         try
         {
             Patch(source, output);
@@ -28,8 +28,10 @@ internal static class Program
             return process.ExitCode;
         }
         catch (Exception ex) { return Fail("启动 PCL 失败。请确认当前目录可写，并关闭正在运行的 PCL 后重试。", ex); }
-        finally { TryDelete(output); }
     }
+
+    private static string GetPatchPath(string source)
+        => Path.Combine(Path.GetDirectoryName(source)!, $"{Path.GetFileNameWithoutExtension(source)}.Patch.exe");
 
     private static string ResolveSource(string[] args)
     {

@@ -18,7 +18,7 @@ PCL-Download-Enable.exe "D:\PCL\Plain Craft Launcher 2.exe"
 PCL-Download-Enable.exe --target "D:\PCL\Plain Craft Launcher 2.exe"
 ```
 
-启动器会在原目录生成临时补丁副本，以原目录作为工作目录启动 PCL2，退出后自动删除副本，不修改原始 PCL 文件。
+启动器会在原目录生成 `<原文件名>.Patch.exe`，以原目录作为工作目录启动 PCL2。补丁副本会保留，之后可以直接双击它继续使用；原始 PCL 文件不会被修改。
 
 ## 构建
 
