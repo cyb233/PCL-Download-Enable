@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -14,10 +15,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x'
 
@@ -31,11 +32,38 @@ jobs:
           -p:PublishSingleFile=true
           -p:EnableCompressionInSingleFile=true
 
-      - name: Create GitHub Release
+      - name: Prepare release metadata
+        id: metadata
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $tag = "manual-${{ github.run_id }}"
+            $title = "Pre-release $tag"
+          } else {
+            $tag = "${{ github.ref_name }}"
+            $title = $tag
+          }
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "title=$title" >> $env:GITHUB_OUTPUT
+
+      - name: Create stable GitHub Release
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >-
-          gh release create "${{ github.ref_name }}"
-          publish/PCL-Download-Enable.exe
-          --title "${{ github.ref_name }}"
-          --generate-notes
+        run: |
+          gh release create "${{ steps.metadata.outputs.tag }}" `
+            publish/PCL-Download-Enable.exe `
+            --title "${{ steps.metadata.outputs.title }}" `
+            --generate-notes
+
+      - name: Create pre-release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.metadata.outputs.tag }}" `
+            publish/PCL-Download-Enable.exe `
+            --title "${{ steps.metadata.outputs.title }}" `
+            --target "${{ github.sha }}" `
+            --prerelease `
+            --generate-notes
