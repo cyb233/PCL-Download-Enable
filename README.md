@@ -1,6 +1,6 @@
 # PCL Download Enable
 
-这是一个同目录启动器，用于启动 `Plain Craft Launcher 2.exe` 时将 `RestrictMcDownload` 改为 `False`，并恢复下载页使用正常的 Minecraft 列表加载器。
+这是一个同目录启动器，用于启动 `Plain Craft Launcher 2.exe` 时将 [`RestrictMcDownload`](https://github.com/Meloong-Git/PCL/blob/6b9a50df911c9d68b69b24c979efba477fb14b67/Plain%20Craft%20Launcher%202/Modules/ModSecret.vb#L18) 改为 `False`，并恢复下载页使用正常的 Minecraft 列表加载器。
 
 https://github.com/Meloong-Git/PCL/discussions/9512
 
