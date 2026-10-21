@@ -1,0 +1,23 @@
+# .NET build output
+bin/
+obj/
+
+# IDE and user-specific files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Local publish and verification output
+publish/
+dist/
+dist-*/
+workflow-verify/
+verify-*/
+inspect-*/
+test-*/
+
+# Logs and temporary files
+*.log
+*.tmp
