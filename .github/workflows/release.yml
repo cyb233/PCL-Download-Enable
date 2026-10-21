@@ -22,15 +22,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Publish single-file executable
-        run: >-
-          dotnet publish PclDownloadEnable.csproj
-          --configuration Release
-          --runtime win-x86
-          --self-contained true
-          --output publish
-          -p:PublishSingleFile=true
-          -p:EnableCompressionInSingleFile=true
+      - name: Publish single-file executables
+        shell: pwsh
+        run: ./publish.ps1 -OutputPath publish
 
       - name: Prepare release metadata
         id: metadata
@@ -53,6 +47,7 @@ jobs:
         run: |
           gh release create "${{ steps.metadata.outputs.tag }}" `
             publish/PCL-Download-Enable.exe `
+            publish/PCL-Download-Enable.Net8.exe `
             --title "${{ steps.metadata.outputs.title }}" `
             --generate-notes
 
@@ -63,6 +58,7 @@ jobs:
         run: |
           gh release create "${{ steps.metadata.outputs.tag }}" `
             publish/PCL-Download-Enable.exe `
+            publish/PCL-Download-Enable.Net8.exe `
             --title "${{ steps.metadata.outputs.title }}" `
             --target "${{ github.sha }}" `
             --prerelease `

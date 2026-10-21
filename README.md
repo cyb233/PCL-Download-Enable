@@ -29,7 +29,7 @@ PCL-Download-Enable.exe --target "D:\PCL\Plain Craft Launcher 2.exe"
 - .NET 8
 
 ```powershell
-dotnet publish -c Release -r win-x86 --self-contained true
+./publish.ps1
 ```
 
-发布配置启用单文件、自包含和 x86，适配当前 PCL2 的 .NET Framework x86 程序。
+发布会生成两个单文件：`PCL-Download-Enable.exe` 为自包含版本，无需安装 .NET；`PCL-Download-Enable.Net8.exe` 为框架依赖版本，需要系统安装 .NET 8 x64，体积更小。两者处理和启动的 PCL 仍然是 x86 程序。
