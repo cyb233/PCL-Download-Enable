@@ -4,6 +4,8 @@
 
 > 当前确定适配版本 `2.99.0.0`
 
+![PCL2](.\image.png)
+
 ## 使用
 
 1. 将 `PCL-Download-Enable.exe` 复制到 `Plain Craft Launcher 2.exe` 所在目录。
