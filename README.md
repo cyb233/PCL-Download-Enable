@@ -1,33 +1,41 @@
 # PCL Download Enable
 
-这是一个同目录启动器，用于启动 `Plain Craft Launcher 2.exe` 时将 [`RestrictMcDownload`](https://github.com/Meloong-Git/PCL/blob/6b9a50df911c9d68b69b24c979efba477fb14b67/Plain%20Craft%20Launcher%202/Modules/ModSecret.vb#L18) 改为 `False`，并恢复下载页使用正常的 Minecraft 列表加载器。
+这是一个 PCL / PCL-CE 的补丁启动器。它为原程序生成同目录的 `<原文件名>.Patch.exe`，原文件保持不变。
+
+| 程序 | 已验证版本 | 补丁行为 |
+| --- | --- | --- |
+| [PCL](https://github.com/Meloong-Git/PCL) | 2.99.0.0 | 将 `RestrictMcDownload` 改为 `False`，恢复下载页和整合包安装入口 |
+| [PCL-CE](https://github.com/PCL-Community/PCL-CE) | 2.15.1.0 | 使 `RestrictedFeaturePolicy.Check` 直接返回 `true` |
+
+程序识别、版本区间和 IL 匹配规则位于 [`patch-profiles.json`](./patch-profiles.json)。配置随 exe 一起嵌入；适配新版本后需重新编译。
 
 https://github.com/Meloong-Git/PCL/discussions/9512
-
-> 当前确定适配版本 `2.99.0.0`
+https://github.com/PCL-Community/PCL-CE/discussions/3670
 
 ![PCL2](./image.png)
 
 ## 使用
 
-1. 将 `PCL-Download-Enable.exe` 复制到 `Plain Craft Launcher 2.exe` 所在目录。
+1. 将 `PCL-Download-Enable.exe` 复制到 PCL 或 PCL-CE 所在目录。
 2. 双击 `PCL-Download-Enable.exe`。
 
-也可以将 `Plain Craft Launcher 2.exe` 直接拖到 `PCL-Download-Enable.exe` 上，或在命令行中指定目标程序：
+如果同目录同时存在两个目标，请将目标 exe 拖到 `PCL-Download-Enable.exe` 上，或在命令行中指定：
 
 ```powershell
 PCL-Download-Enable.exe "D:\PCL\Plain Craft Launcher 2.exe"
-PCL-Download-Enable.exe --target "D:\PCL\Plain Craft Launcher 2.exe"
+PCL-Download-Enable.exe --target "D:\PCL-CE\PCL2_CE_Release_x64.exe"
 ```
 
-启动器会在原目录生成 `<原文件名>.Patch.exe`，以原目录作为工作目录启动 PCL2。补丁副本会保留，之后可以直接双击它继续使用；原始 PCL 文件不会被修改。
+启动器以目标所在目录作为工作目录启动补丁副本。补丁副本会保留，之后可以直接双击它继续使用。PCL-CE 本身需要 .NET 10 桌面运行时。
+
+更新目标程序后，可先用 `--patch-only --target <exe路径>` 验证。配置中的上界 `99.99.99.99` 允许新版本尝试现有规则，但不保证兼容；IL 结构变化时补丁会失败并提示前往 [GitHub 项目主页](https://github.com/cyb233/PCL-Download-Enable)检查更新或反馈。适配新版本时，在 `patch-profiles.json` 的对应程序下调整版本区间及匹配行为，再重新编译启动器。
 
 ## 构建
 
 ### 开发环境
 
 - .NET Framework 4.8
-  > [与 PCL2 需求一致](https://shimo.im/docs/qKPttVvXKqPD8YDC#:~:text=%E4%B8%8B%E8%BD%BD%E5%B9%B6%E5%AE%89%E8%A3%85%20.NET%20Framework%204.8)
+  > [这与 PCL2 需求一致](https://shimo.im/docs/qKPttVvXKqPD8YDC#:~:text=%E4%B8%8B%E8%BD%BD%E5%B9%B6%E5%AE%89%E8%A3%85%20.NET%20Framework%204.8)
 
 ```powershell
 dotnet build PclDownloadEnable.csproj -c Release

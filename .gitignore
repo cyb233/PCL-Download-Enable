@@ -21,3 +21,4 @@ test-*/
 # Logs and temporary files
 *.log
 *.tmp
+*.exe

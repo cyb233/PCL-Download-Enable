@@ -1,0 +1,39 @@
+{
+  "PCL": {
+    "[2.99.0.0,99.99.99.99]": {
+      "format": "assembly",
+      "assembly": "Plain Craft Launcher 2",
+      "fileNames": ["Plain Craft Launcher 2.exe"],
+      "signature": { "type": "PCL.ModSecret", "member": "RestrictMcDownload" },
+      "actions": [
+        { "behavior": "setConstant", "selectors": { "type": "PCL.ModSecret", "field": "RestrictMcDownload", "value": "false" } },
+        { "behavior": "restoreLoader", "selectors": { "type": "PCL.PageDownloadInstall", "method": "LoaderInit", "parameters": "0", "marker": "关闭下载", "sourceType": "PCL.ModDownload", "sourceField": "DlClientListLoader", "constructorType": "LoaderTask" } },
+        { "behavior": "showCard", "selectors": { "type": "PCL.PageDownloadModify", "method": "LoadInstanceFinished", "parameters": "1", "setter": "set_Visibility", "fromValue": "2", "toValue": "0" } },
+        { "behavior": "restoreResourceInstall", "selectors": { "type": "PCL.PageDownloadResourceDetail", "method": "InitializeStackResourceVersions", "parameters": "1", "childrenGetter": "get_Children", "addMethod": "Add", "resourceField": "TargetResourceType", "resourceValue": "2", "installMethod": "Install_Click", "saveMethod": "Save_Click", "versionType": "PCL.ResourceVersion", "toListMethod": "ToListItem", "listClickType": "PCL.MyListItem/ClickEventHandler", "iconClickType": "PCL.MyIconButton/ClickEventHandler", "versionLocalType": "PCL.ResourceVersion", "hasDuplicatesLocal": "1" } },
+        { "behavior": "skipRestrictionBranch", "selectors": { "type": "PCL.FormMain/_Closure$__25-0", "method": "_Lambda$__0", "parameters": "0", "marker": "为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……", "branchOffset": "3" } },
+        { "behavior": "restoreModpackDispatch", "selectors": { "type": "PCL.ModModpack", "method": "ModpackInstall", "parameters": "3", "marker": "为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……", "kindLocal": "4", "resultLocal": "0", "archiveLocal": "1", "baseLocal": "2", "finallyStartOpcode": "Ldloc_1", "fallbackMethod": "InstallPackCompress" },
+          "cases": [
+            { "value": 0, "method": "InstallPackCurseForge", "parameters": 5 },
+            { "value": 1, "method": "InstallPackHMCL", "parameters": 3 },
+            { "value": 2, "method": "InstallPackMMC", "parameters": 3 },
+            { "value": 3, "method": "InstallPackMCBBS", "parameters": 4 },
+            { "value": 4, "method": "InstallPackModrinth", "parameters": 5 },
+            { "value": 9, "method": "InstallPackLauncherPack", "parameters": 3 }
+          ]
+        }
+      ]
+    }
+  },
+  "PCL-CE": {
+    "[2.15.1.0,99.99.99.99]": {
+      "format": "bundle",
+      "assembly": "Plain Craft Launcher 2",
+      "bundleEntry": "Plain Craft Launcher 2.dll",
+      "fileNames": ["PCL2_CE_Release_x64.exe"],
+      "signature": { "type": "PCL.RestrictedFeaturePolicy", "member": "Check" },
+      "actions": [
+        { "behavior": "returnTrue", "selectors": { "type": "PCL.RestrictedFeaturePolicy", "method": "Check", "parameters": "2", "firstOpcode": "Call", "firstCall": "Assess" } }
+      ]
+    }
+  }
+}
