@@ -2,11 +2,15 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 internal static class Program
 {
     private const string ProjectUrl = "https://github.com/cyb233/PCL-Download-Enable";
+    private static readonly string WindowTitle = "PCL Download Enable " +
+        (((AssemblyInformationalVersionAttribute?)Attribute.GetCustomAttribute(
+            typeof(Program).Assembly, typeof(AssemblyInformationalVersionAttribute)))?.InformationalVersion ?? "dev");
 
     private static int Main(string[] args)
     {
@@ -116,7 +120,7 @@ internal static class Program
         var choice = MessageBox(IntPtr.Zero,
             "补丁失败：" + message + "\n\n请到 GitHub 检查更新或反馈问题：\n" + ProjectUrl +
             "\n\n点击“确定”打开项目主页；点击“取消”或关闭窗口退出。",
-            "PCL Download Enable", 0x11);
+            WindowTitle, 0x11);
         if (choice == 1)
         {
             try { Process.Start(new ProcessStartInfo(ProjectUrl) { UseShellExecute = true }); }
@@ -127,7 +131,7 @@ internal static class Program
 
     private static int Fail(string message)
     {
-        MessageBox(IntPtr.Zero, message, "PCL Download Enable", 0x10);
+        MessageBox(IntPtr.Zero, message, WindowTitle, 0x10);
         return 1;
     }
 }

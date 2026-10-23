@@ -41,4 +41,6 @@ PCL-Download-Enable.exe --target "D:\PCL-CE\PCL2_CE_Release_x64.exe"
 dotnet build PclDownloadEnable.csproj -c Release
 ```
 
+本地构建的窗口标题使用 `dev`；可通过 `-p:ReleaseTag=v0.0.5` 指定版本标识。GitHub Release 构建会自动写入发布 tag。
+
 构建会生成单个 .NET Framework 4.8 单文件：`PCL-Download-Enable.exe`。`Mono.Cecil` 已在 Release 构建时合并进 exe，运行时只依赖系统已安装的 .NET Framework 4.8。

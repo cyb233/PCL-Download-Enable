@@ -17,26 +17,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Build .NET Framework 4.8 executable
-        shell: pwsh
-        run: |
-          dotnet build PclDownloadEnable.csproj --configuration Release
-          New-Item -ItemType Directory -Path publish -Force | Out-Null
-          Copy-Item bin/Release/net48/PCL-Download-Enable.exe publish/PCL-Download-Enable.exe
-
       - name: Prepare release metadata
         id: metadata
         shell: pwsh
         run: |
-          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            $tag = "manual-${{ github.run_id }}"
+          if ($env:GITHUB_EVENT_NAME -eq "workflow_dispatch") {
+            $tag = "manual-$env:GITHUB_RUN_ID"
             $title = "Pre-release $tag"
           } else {
-            $tag = "${{ github.ref_name }}"
+            $tag = $env:GITHUB_REF_NAME
             $title = $tag
           }
           "tag=$tag" >> $env:GITHUB_OUTPUT
           "title=$title" >> $env:GITHUB_OUTPUT
+
+      - name: Build .NET Framework 4.8 executable
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ steps.metadata.outputs.tag }}
+        run: |
+          dotnet build PclDownloadEnable.csproj --configuration Release "-p:ReleaseTag=$env:RELEASE_TAG"
+          New-Item -ItemType Directory -Path publish -Force | Out-Null
+          Copy-Item bin/Release/net48/PCL-Download-Enable.exe publish/PCL-Download-Enable.exe
 
       - name: Create stable GitHub Release
         if: github.event_name == 'push'
