@@ -17,8 +17,11 @@ internal static class Program
         var patchStarted = false;
         try
         {
+            RunLog.Info("启动 " + WindowTitle);
             var profiles = PatchProfiles.Load();
+            RunLog.Info("已加载内置补丁配置。");
             var source = ResolveSource(args, profiles);
+            RunLog.Info("目标程序：" + source);
             var output = Path.Combine(Path.GetDirectoryName(source)!,
                 Path.GetFileNameWithoutExtension(source) + ".Patch.exe");
             if (Path.GetFileNameWithoutExtension(source).EndsWith(".Patch", StringComparison.OrdinalIgnoreCase))
@@ -26,22 +29,28 @@ internal static class Program
 
             patchStarted = true;
             var target = profiles.Identify(source);
+            RunLog.Info($"识别为 {target.Program} {target.Version}，输出路径：{output}");
             var temporary = output + ".tmp";
             try
             {
                 if (target.Bundle != null)
                 {
+                    RunLog.Info("开始修补单文件 bundle。");
                     PclCePatch.Apply(target);
                     File.WriteAllBytes(temporary, target.Bundle.Data);
                 }
                 else
                 {
+                    RunLog.Info("开始修补托管程序集。");
                     PclPatch.Apply(target);
                     target.Assembly.Write(temporary);
                 }
+                RunLog.Info("补丁已写入，开始验证。");
                 profiles.Verify(temporary, target);
+                RunLog.Info("补丁验证通过。");
                 if (File.Exists(output)) File.Delete(output);
                 File.Move(temporary, output);
+                RunLog.Info("补丁副本已生成：" + output);
             }
             finally
             {
@@ -49,23 +58,29 @@ internal static class Program
                 TryDelete(temporary);
             }
 
-            if (args.Any(a => a.Equals("--patch-only", StringComparison.OrdinalIgnoreCase))) return 0;
+            if (args.Any(a => a.Equals("--patch-only", StringComparison.OrdinalIgnoreCase)))
+            {
+                RunLog.Info("仅生成补丁，执行完成。");
+                return 0;
+            }
+            RunLog.Info("启动补丁副本。");
             using (var process = Process.Start(new ProcessStartInfo(output)
                    { WorkingDirectory = Path.GetDirectoryName(source)!, UseShellExecute = true })
                    ?? throw new InvalidOperationException("无法启动补丁副本。"))
             {
                 process.WaitForExit();
+                RunLog.Info("补丁副本已退出，退出码：" + process.ExitCode);
                 return process.ExitCode;
             }
         }
         catch (Exception ex)
         {
+            RunLog.Error(ex);
+            var logPath = RunLog.SaveFailure();
             if (Environment.GetEnvironmentVariable("PCL_PATCH_DEBUG") == "1")
-            {
-                Console.Error.WriteLine(ex);
                 return 1;
-            }
-            return patchStarted ? FailPatch(ex.Message) : Fail(ex.Message);
+            var message = ex.Message + "\n\n本次执行日志：" + logPath;
+            return patchStarted ? FailPatch(message) : Fail(message);
         }
     }
 
@@ -124,7 +139,12 @@ internal static class Program
         if (choice == 1)
         {
             try { Process.Start(new ProcessStartInfo(ProjectUrl) { UseShellExecute = true }); }
-            catch (Exception ex) { Fail("无法打开项目主页：" + ex.Message + "\n" + ProjectUrl); }
+            catch (Exception ex)
+            {
+                RunLog.Error(ex);
+                var logPath = RunLog.SaveFailure();
+                Fail("无法打开项目主页：" + ex.Message + "\n" + ProjectUrl + "\n\n本次执行日志：" + logPath);
+            }
         }
         return 1;
     }

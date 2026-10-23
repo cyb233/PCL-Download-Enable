@@ -17,6 +17,7 @@ internal static class PclPatch
         var types = PatchTarget.Types(target.Assembly).ToList();
         foreach (var action in target.Profile.Actions)
         {
+            RunLog.Info("PCL 补丁动作：" + action.Behavior);
             switch (action.Behavior)
             {
                 case "setConstant": SetConstant(types, action); break;

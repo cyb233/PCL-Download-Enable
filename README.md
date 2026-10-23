@@ -28,6 +28,8 @@ PCL-Download-Enable.exe --target "D:\PCL-CE\PCL2_CE_Release_x64.exe"
 
 启动器以目标所在目录作为工作目录启动补丁副本。补丁副本会保留，之后可以直接双击它继续使用。PCL 需要 [.NET Framework 4.8](https://shimo.im/docs/qKPttVvXKqPD8YDC#:~:text=%E4%B8%8B%E8%BD%BD%E5%B9%B6%E5%AE%89%E8%A3%85%20.NET%20Framework%204.8) 运行环境，PCL-CE 需要 [.NET 10 Desktop Runtime](https://github.com/PCL-Community/PCL-CE#-%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0) 运行环境。
 
+执行过程会输出带时间戳的控制台日志。只有启动器发生异常时，才会把本次完整日志和异常堆栈写入启动器所在目录的 `PCL-Download-Enable-*.log`；若该目录不可写，则写入系统临时目录。错误窗口会显示日志路径，正常执行不生成日志文件。
+
 更新目标程序后，可先用 `--patch-only --target <exe路径>` 验证。配置中的上界 `99.99.99.99` 允许新版本尝试现有规则，但不保证兼容；IL 结构变化时补丁会失败并提示前往 [GitHub 项目主页](https://github.com/cyb233/PCL-Download-Enable)检查更新或反馈。适配新版本时，在 `patch-profiles.json` 的对应程序下调整版本区间及匹配行为，再重新编译启动器。
 
 ## 构建
