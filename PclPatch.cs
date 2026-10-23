@@ -7,9 +7,10 @@ using Mono.Cecil.Cil;
 
 internal static class PclPatch
 {
-    private static readonly string[] KnownBehaviors = {
-        "setConstant", "restoreLoader", "showCard", "restoreResourceInstall",
-        "skipRestrictionBranch", "restoreModpackDispatch"
+    private static readonly PatchBehavior[] KnownBehaviors = {
+        PatchBehavior.setConstant, PatchBehavior.restoreLoader, PatchBehavior.showCard,
+        PatchBehavior.restoreResourceInstall, PatchBehavior.skipRestrictionBranch,
+        PatchBehavior.restoreModpackDispatch
     };
 
     internal static void Apply(PatchTarget target)
@@ -20,12 +21,12 @@ internal static class PclPatch
             RunLog.Info("PCL 补丁动作：" + action.Behavior);
             switch (action.Behavior)
             {
-                case "setConstant": SetConstant(types, action); break;
-                case "restoreLoader": RestoreLoader(types, action); break;
-                case "showCard": ShowCard(types, action); break;
-                case "restoreResourceInstall": RestoreResourceInstall(types, action); break;
-                case "skipRestrictionBranch": SkipRestrictionBranch(types, action); break;
-                case "restoreModpackDispatch": RestoreModpackDispatch(types, action); break;
+                case PatchBehavior.setConstant: SetConstant(types, action); break;
+                case PatchBehavior.restoreLoader: RestoreLoader(types, action); break;
+                case PatchBehavior.showCard: ShowCard(types, action); break;
+                case PatchBehavior.restoreResourceInstall: RestoreResourceInstall(types, action); break;
+                case PatchBehavior.skipRestrictionBranch: SkipRestrictionBranch(types, action); break;
+                case PatchBehavior.restoreModpackDispatch: RestoreModpackDispatch(types, action); break;
                 default: throw new InvalidDataException("未知 PCL 补丁行为：" + action.Behavior);
             }
         }
@@ -43,20 +44,20 @@ internal static class PclPatch
         {
             if (!KnownBehaviors.Contains(action.Behavior)) throw new InvalidDataException("未知 PCL 补丁行为：" + action.Behavior);
             var type = FindType(types, action.Get("type"));
-            if (action.Behavior == "setConstant")
+            if (action.Behavior == PatchBehavior.setConstant)
             {
                 if (!Equals(type.Fields.Single(f => f.Name == action.Get("field")).Constant, bool.Parse(action.Get("value"))))
                     throw new InvalidDataException("RestrictMcDownload 未改为 False。" );
                 continue;
             }
             var method = FindMethod(type, action);
-            if (action.Behavior == "restoreLoader" && !method.Body.Instructions.Any(i => i.OpCode == OpCodes.Ldsfld && i.Operand is FieldReference f && f.Name == action.Get("sourceField")))
+            if (action.Behavior == PatchBehavior.restoreLoader && !method.Body.Instructions.Any(i => i.OpCode == OpCodes.Ldsfld && i.Operand is FieldReference f && f.Name == action.Get("sourceField")))
                 throw new InvalidDataException("下载加载器未恢复。" );
-            if (action.Behavior == "restoreResourceInstall" && !method.Body.Instructions.Any(i => i.OpCode == OpCodes.Ldftn && i.Operand is MethodReference m && m.Name == action.Get("installMethod")))
+            if (action.Behavior == PatchBehavior.restoreResourceInstall && !method.Body.Instructions.Any(i => i.OpCode == OpCodes.Ldftn && i.Operand is MethodReference m && m.Name == action.Get("installMethod")))
                 throw new InvalidDataException("整合包安装按钮未恢复。" );
-            if (action.Behavior == "restoreModpackDispatch" && (action.Cases == null || action.Cases.Any(c => !method.Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == c.Method))))
+            if (action.Behavior == PatchBehavior.restoreModpackDispatch && (action.Cases == null || action.Cases.Any(c => !method.Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == c.Method))))
                 throw new InvalidDataException("整合包分发逻辑未恢复。" );
-            if (action.Behavior == "restoreModpackDispatch")
+            if (action.Behavior == PatchBehavior.restoreModpackDispatch)
             {
                 VerifyControlFlow(method);
                 var instructions = method.Body.Instructions;
@@ -65,11 +66,11 @@ internal static class PclPatch
                     instructions[instructions.Count - 1].OpCode == OpCodes.Ret))
                     throw new InvalidDataException("整合包分发方法的 finally 边界不正确。" );
             }
-            if (action.Behavior == "showCard" && !method.Body.Instructions.Any(i =>
+            if (action.Behavior == PatchBehavior.showCard && !method.Body.Instructions.Any(i =>
                     IntegerConstant(i) == int.Parse(action.Get("toValue")) &&
                     i.Next(method)?.Operand is MethodReference m && m.Name == action.Get("setter")))
                 throw new InvalidDataException("版本修改卡片未恢复。" );
-            if (action.Behavior == "skipRestrictionBranch")
+            if (action.Behavior == PatchBehavior.skipRestrictionBranch)
             {
                 var instructions = method.Body.Instructions;
                 var marker = instructions.Single(i => i.OpCode == OpCodes.Ldstr && (string)i.Operand == action.Get("marker"));

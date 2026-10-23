@@ -166,9 +166,21 @@ public sealed class PatchSignature
     public string Member { get; set; } = "";
 }
 
+public enum PatchBehavior
+{
+    Unknown,
+    setConstant,
+    restoreLoader,
+    showCard,
+    restoreResourceInstall,
+    skipRestrictionBranch,
+    restoreModpackDispatch,
+    returnTrue
+}
+
 public sealed class PatchAction
 {
-    public string Behavior { get; set; } = "";
+    public PatchBehavior Behavior { get; set; }
     public Dictionary<string, string> Selectors { get; set; } = new Dictionary<string, string>();
     public PatchCase[] Cases { get; set; } = new PatchCase[0];
 

@@ -13,7 +13,13 @@ internal static class PclCePatch
         foreach (var action in target.Profile.Actions)
         {
             RunLog.Info("PCL-CE 补丁动作：" + action.Behavior);
-            if (action.Behavior != "returnTrue") throw new InvalidDataException("未知 PCL-CE 补丁行为：" + action.Behavior);
+            switch (action.Behavior)
+            {
+                case PatchBehavior.returnTrue:
+                    break;
+                default:
+                    throw new InvalidDataException("未知 PCL-CE 补丁行为：" + action.Behavior);
+            }
             var type = PatchTarget.Types(target.Assembly).Single(t => t.FullName == action.Get("type"));
             var method = type.Methods.Single(m => m.Name == action.Get("method") &&
                 m.Parameters.Count == int.Parse(action.Get("parameters")));
