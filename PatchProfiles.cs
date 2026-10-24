@@ -175,6 +175,8 @@ public enum PatchBehavior
     restoreResourceInstall,
     skipRestrictionBranch,
     restoreModpackDispatch,
+    restoreDownloadSidebar,
+    restoreManualModpackInstall,
     returnTrue
 }
 

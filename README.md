@@ -5,6 +5,7 @@
 | 程序 | 已验证版本 | 补丁行为 |
 | --- | --- | --- |
 | [PCL](https://github.com/Meloong-Git/PCL) | [2.99.0.0](https://github.com/Meloong-Git/PCL/raw/6b9a50df911c9d68b69b24c979efba477fb14b67/%E6%9C%80%E6%96%B0%E6%AD%A3%E5%BC%8F%E7%89%88.zip)([Commit 6b9a50d](https://github.com/Meloong-Git/PCL/commit/6b9a50df911c9d68b69b24c979efba477fb14b67)) | 将 `RestrictMcDownload` 改为 `False`，恢复下载页和整合包安装入口 |
+| [PCL](https://github.com/Meloong-Git/PCL) | [2.99.0.1](https://github.com/Meloong-Git/PCL/raw/93ede5d9e638c99fcec853a9ba1eecd91ceee7f5/%E6%9C%80%E6%96%B0%E6%AD%A3%E5%BC%8F%E7%89%88.zip)([Commit 93ede5d](https://github.com/Meloong-Git/PCL/commit/93ede5d9e638c99fcec853a9ba1eecd91ceee7f5)) | 恢复下载侧栏、游戏列表、资源安装按钮和手动整合包安装入口 |
 | [PCL-CE](https://github.com/PCL-Community/PCL-CE) | [2.15.1.0](https://github.com/PCL-Community/PCL-CE/releases/download/v2.15.1/PCL2_CE_Release_x64.exe)([Release 2.15.1](https://github.com/PCL-Community/PCL-CE/releases/tag/v2.15.1)) | 使 `RestrictedFeaturePolicy.Check` 直接返回 `true` |
 
 程序识别、版本区间和 IL 匹配规则位于 [`patch-profiles.json`](./patch-profiles.json)。配置随 exe 一起嵌入；适配新版本后需重新编译。

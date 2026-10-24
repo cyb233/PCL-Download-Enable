@@ -10,7 +10,8 @@ internal static class PclPatch
     private static readonly PatchBehavior[] KnownBehaviors = {
         PatchBehavior.setConstant, PatchBehavior.restoreLoader, PatchBehavior.showCard,
         PatchBehavior.restoreResourceInstall, PatchBehavior.skipRestrictionBranch,
-        PatchBehavior.restoreModpackDispatch
+        PatchBehavior.restoreModpackDispatch, PatchBehavior.restoreDownloadSidebar,
+        PatchBehavior.restoreManualModpackInstall
     };
 
     internal static void Apply(PatchTarget target)
@@ -27,6 +28,8 @@ internal static class PclPatch
                 case PatchBehavior.restoreResourceInstall: RestoreResourceInstall(types, action); break;
                 case PatchBehavior.skipRestrictionBranch: SkipRestrictionBranch(types, action); break;
                 case PatchBehavior.restoreModpackDispatch: RestoreModpackDispatch(types, action); break;
+                case PatchBehavior.restoreDownloadSidebar: RestoreDownloadSidebar(types, action); break;
+                case PatchBehavior.restoreManualModpackInstall: RestoreManualModpackInstall(types, action); break;
                 default: throw new InvalidDataException("未知 PCL 补丁行为：" + action.Behavior);
             }
         }
@@ -53,6 +56,27 @@ internal static class PclPatch
             var method = FindMethod(type, action);
             if (action.Behavior == PatchBehavior.restoreLoader && !method.Body.Instructions.Any(i => i.OpCode == OpCodes.Ldsfld && i.Operand is FieldReference f && f.Name == action.Get("sourceField")))
                 throw new InvalidDataException("下载加载器未恢复。" );
+            if (action.Behavior == PatchBehavior.restoreDownloadSidebar)
+            {
+                var instructions = method.Body.Instructions;
+                if (instructions.Count != 8 || instructions[instructions.Count - 1].OpCode != OpCodes.Ret ||
+                    IntegerConstant(instructions[3]) != 0 ||
+                    !instructions.Any(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference m && m.Name == "InitializeComponent"))
+                    throw new InvalidDataException("下载侧栏入口未恢复。" );
+            }
+            if (action.Behavior == PatchBehavior.restoreManualModpackInstall)
+            {
+                var instructions = method.Body.Instructions;
+                if (!instructions.Any(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference m && m.Name == "SelectFile") ||
+                    !instructions.Any(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference m && m.Name == "RunInNewThread") ||
+                    !instructions.Any(i => i.OpCode == OpCodes.Ldftn && i.Operand is MethodReference m && m.Name == action.Get("workerMethod")) ||
+                    !instructions.Any(i => i.OpCode == OpCodes.Stfld && i.Operand is FieldReference f && f.Name == action.Get("fileField")) ||
+                    !instructions.Any(i => i.OpCode == OpCodes.Ldstr && (string)i.Operand == action.Get("filter")) ||
+                    !instructions.Any(i => (i.OpCode == OpCodes.Brtrue || i.OpCode == OpCodes.Brtrue_S) &&
+                        i.Operand is Instruction destination && destination.OpCode == OpCodes.Ret))
+                    throw new InvalidDataException("手动整合包安装入口未恢复。" );
+                VerifyControlFlow(method);
+            }
             if (action.Behavior == PatchBehavior.restoreResourceInstall && !method.Body.Instructions.Any(i => i.OpCode == OpCodes.Ldftn && i.Operand is MethodReference m && m.Name == action.Get("installMethod")))
                 throw new InvalidDataException("整合包安装按钮未恢复。" );
             if (action.Behavior == PatchBehavior.restoreModpackDispatch && (action.Cases == null || action.Cases.Any(c => !method.Body.Instructions.Any(i => i.Operand is MethodReference m && m.Name == c.Method))))
@@ -155,6 +179,87 @@ internal static class PclPatch
         if (branch.OpCode != OpCodes.Brtrue_S && branch.OpCode != OpCodes.Brtrue)
             throw new InvalidDataException("主页限制判断与配置不符。" );
         branch.OpCode = OpCodes.Br_S;
+    }
+
+    private static void RestoreDownloadSidebar(List<TypeDefinition> types, PatchAction action)
+    {
+        var method = FindMethod(FindType(types, action.Get("type")), action);
+        var instructions = method.Body.Instructions;
+        if (instructions.Count != 23 || instructions[6].OpCode != OpCodes.Call ||
+            !(instructions[6].Operand is MethodReference init) || init.Name != "InitializeComponent" ||
+            instructions[7].OpCode != OpCodes.Ldarg_0 ||
+            instructions[8].OpCode != OpCodes.Callvirt || !(instructions[8].Operand is MethodReference install) || install.Name != "get_ItemInstall" ||
+            IntegerConstant(instructions[9]) != 2 ||
+            instructions[10].OpCode != OpCodes.Callvirt || !(instructions[10].Operand is MethodReference installHide) || installHide.Name != "set_Visibility" ||
+            instructions[11].OpCode != OpCodes.Ldarg_0 ||
+            instructions[12].OpCode != OpCodes.Callvirt || !(instructions[12].Operand is MethodReference resource) || resource.Name != "get_LabResource" ||
+            IntegerConstant(instructions[13]) != 2 ||
+            instructions[14].OpCode != OpCodes.Callvirt || !(instructions[14].Operand is MethodReference resourceHide) || resourceHide.Name != "set_Visibility" ||
+            instructions[15].OpCode != OpCodes.Ldarg_0 ||
+            IntegerConstant(instructions[16]) != 2 ||
+            instructions[17].OpCode != OpCodes.Stfld || !(instructions[17].Operand is FieldReference page) || page.Name != "PageID" ||
+            instructions[18].OpCode != OpCodes.Ldarg_0 ||
+            instructions[19].OpCode != OpCodes.Callvirt || !(instructions[19].Operand is MethodReference mod) || mod.Name != "get_ItemMod" ||
+            IntegerConstant(instructions[20]) != 1 || instructions[21].OpCode != OpCodes.Callvirt ||
+            !(instructions[21].Operand is MethodReference check) || check.Name != "set_Checked" || instructions[22].OpCode != OpCodes.Ret)
+            throw new InvalidDataException("下载侧栏限制逻辑与配置不符。" );
+        for (var i = instructions.Count - 1; i > 6; i--) instructions.RemoveAt(i);
+        instructions.Add(Instruction.Create(OpCodes.Ret));
+    }
+
+    private static void RestoreManualModpackInstall(List<TypeDefinition> types, PatchAction action)
+    {
+        var type = FindType(types, action.Get("type"));
+        var method = FindMethod(type, action);
+        var instructions = method.Body.Instructions;
+        if (instructions.Count != 7 || instructions[0].OpCode != OpCodes.Newobj ||
+            instructions[1].OpCode != OpCodes.Stloc_0 || instructions[2].OpCode != OpCodes.Ldstr ||
+            (string)instructions[2].Operand != action.Get("marker") ||
+            IntegerConstant(instructions[3]) != 2 || IntegerConstant(instructions[4]) != 1 ||
+            instructions[5].OpCode != OpCodes.Call || !(instructions[5].Operand is MethodReference hint) || hint.Name != "Hint" ||
+            instructions[6].OpCode != OpCodes.Ret)
+            throw new InvalidDataException("手动整合包安装限制逻辑与配置不符。" );
+
+        var workerType = FindType(types, action.Get("workerType"));
+        var workerCtor = workerType.Methods.Single(m => m.IsConstructor && m.Parameters.Count == 0);
+        var worker = workerType.Methods.Single(m => m.Name == action.Get("workerMethod") && m.Parameters.Count == 0);
+        var file = workerType.Fields.Single(f => f.Name == action.Get("fileField") && f.FieldType.MetadataType == MetadataType.String);
+        if (!worker.Body.Instructions.Any(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference m &&
+            m.Name == "ModpackInstall" && m.Parameters.Count == 3))
+            throw new InvalidDataException("整合包安装回调与配置不符。" );
+        var dialog = FindType(types, "PCL.ModJava").Methods.Single(m => m.Name == "ManuallyImportJava");
+        var dialogCalls = dialog.Body.Instructions.Select(i => i.Operand).OfType<MethodReference>().ToList();
+        var selectFile = dialogCalls.Single(m => m.Name == "SelectFile" && m.DeclaringType.FullName == "MeloongCore.Wpf.Dialogs");
+        var filter = dialogCalls.Single(m => m.Name == "op_Implicit" && m.DeclaringType.FullName.StartsWith("MeloongCore.OneOf`2<", StringComparison.Ordinal));
+        var nullable = dialogCalls.Single(m => m.Name == ".ctor" && m.DeclaringType.FullName.StartsWith("System.Nullable`1<MeloongCore.OneOf`2<", StringComparison.Ordinal));
+        var importConfig = FindType(types, "PCL.PageInstanceExport").Methods.Single(m => m.Name == "ImportConfig");
+        var first = importConfig.Body.Instructions.Select(i => i.Operand).OfType<MethodReference>()
+            .Single(m => m.Name == "FirstOrDefault" && m.DeclaringType.FullName == "System.Linq.Enumerable");
+        var fileMissing = importConfig.Body.Instructions.Select(i => i.Operand).OfType<MethodReference>()
+            .Single(m => m.Name == "IsNullOrEmpty" && m.DeclaringType.FullName == "System.String");
+        var drag = FindType(types, "PCL.FormMain").Methods.Single(m => m.Name == "FileDrag");
+        var dragCalls = drag.Body.Instructions.Select(i => i.Operand).OfType<MethodReference>().ToList();
+        var actionCtor = dragCalls.Single(m => m.Name == ".ctor" && m.DeclaringType.FullName == "System.Action");
+        var runThread = dragCalls.Single(m => m.Name == "RunInNewThread" && m.DeclaringType.FullName == "PCL.ModBase");
+        var done = Instruction.Create(OpCodes.Ret);
+        var replacement = new[]
+        {
+            Instruction.Create(OpCodes.Newobj, workerCtor), Instruction.Create(OpCodes.Stloc_0),
+            Instruction.Create(OpCodes.Ldloc_0), Instruction.Create(OpCodes.Ldstr, action.Get("title")),
+            Instruction.Create(OpCodes.Ldc_I4_0), Instruction.Create(OpCodes.Ldnull),
+            Instruction.Create(OpCodes.Ldstr, action.Get("filter")), Instruction.Create(OpCodes.Call, filter),
+            Instruction.Create(OpCodes.Newobj, nullable), Instruction.Create(OpCodes.Call, selectFile),
+            Instruction.Create(OpCodes.Call, first), Instruction.Create(OpCodes.Stfld, file),
+            Instruction.Create(OpCodes.Ldloc_0), Instruction.Create(OpCodes.Ldfld, file),
+            Instruction.Create(OpCodes.Call, fileMissing), Instruction.Create(OpCodes.Brtrue, done),
+            Instruction.Create(OpCodes.Ldloc_0), Instruction.Create(OpCodes.Ldftn, worker),
+            Instruction.Create(OpCodes.Newobj, actionCtor), Instruction.Create(OpCodes.Ldstr, action.Get("threadName")),
+            Instruction.Create(OpCodes.Ldc_I4_2), Instruction.Create(OpCodes.Call, runThread),
+            Instruction.Create(OpCodes.Pop), done
+        };
+        instructions.Clear();
+        foreach (var instruction in replacement) instructions.Add(instruction);
+        method.Body.MaxStackSize = 8;
     }
 
     private static void RestoreModpackDispatch(List<TypeDefinition> types, PatchAction action)
