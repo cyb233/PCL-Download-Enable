@@ -17,6 +17,7 @@ workflow-verify/
 verify-*/
 inspect-*/
 test-*/
+test/
 
 # Logs and temporary files
 *.log
