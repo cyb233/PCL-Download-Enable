@@ -32,7 +32,7 @@ https://github.com/PCL-Community/PCL-CE/discussions/3670
 > PCL 需要 [.NET Framework 4.8](https://shimo.im/docs/qKPttVvXKqPD8YDC#:~:text=%E4%B8%8B%E8%BD%BD%E5%B9%B6%E5%AE%89%E8%A3%85%20.NET%20Framework%204.8) 运行环境  
 > PCL-CE 需要 [.NET 10 Desktop Runtime](https://github.com/PCL-Community/PCL-CE#-%E6%94%AF%E6%8C%81%E5%B9%B3%E5%8F%B0) 运行环境。
 
-> 注：[.NET Framework 4.8](https://dotnet.microsoft.com/zh-cn/download/dotnet-framework/net48)自[Windows 2019 年 5 月 10 日更新（版本 1903）开始预装于Windows](https://learn.microsoft.com/zh-cn/dotnet/framework/install/versions-and-dependencies#net-framework-48)，更早的版本可能需要自行下载[.NET Framework 4.8](https://dotnet.microsoft.com/zh-cn/download/dotnet-framework/thank-you/net48-web-installer)
+> 注：[.NET Framework 4.8](https://dotnet.microsoft.com/zh-cn/download/dotnet-framework/net48)自[2019 年 5 月 10 日更新（版本 1903）开始预装于Windows](https://learn.microsoft.com/zh-cn/dotnet/framework/install/versions-and-dependencies#net-framework-48)，更早的版本可能需要自行[下载 .NET Framework 4.8](https://dotnet.microsoft.com/zh-cn/download/dotnet-framework/thank-you/net48-web-installer)
 
 ### 使用步骤
 
@@ -42,8 +42,8 @@ https://github.com/PCL-Community/PCL-CE/discussions/3670
 如果同目录同时存在两个目标，请将目标 exe 拖到 `PCL-Download-Enable.exe` 上，或在命令行中指定：
 
 ```powershell
-PCL-Download-Enable.exe "D:\PCL\Plain Craft Launcher 2.exe"
-PCL-Download-Enable.exe --target "D:\PCL-CE\PCL2_CE_Release_x64.exe"
+.\PCL-Download-Enable.exe "D:\PCL\Plain Craft Launcher 2.exe"
+.\PCL-Download-Enable.exe --target "D:\PCL-CE\PCL2_CE_Release_x64.exe"
 ```
 
 启动器以目标所在目录作为工作目录生成并启动补丁副本。补丁副本会保留，之后可以直接双击它继续使用。你也依然可以通过本程序启动，每次会覆盖生成补丁副本。
