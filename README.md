@@ -56,8 +56,7 @@ PCL-Download-Enable.exe --target "D:\PCL-CE\PCL2_CE_Release_x64.exe"
 
 ### 开发环境
 
-- .NET Framework 4.8
-  > [这与 PCL2 需求一致](https://shimo.im/docs/qKPttVvXKqPD8YDC#:~:text=%E4%B8%8B%E8%BD%BD%E5%B9%B6%E5%AE%89%E8%A3%85%20.NET%20Framework%204.8)
+- [.NET Framework 4.8](https://dotnet.microsoft.com/zh-cn/download/dotnet-framework/net48)
 
 ```powershell
 dotnet build PclDownloadEnable.csproj -c Release
