@@ -22,27 +22,26 @@ internal static class Program
             RunLog.Info("已加载内置补丁配置。");
             var source = ResolveSource(args, profiles);
             RunLog.Info("目标程序：" + source);
-            var output = Path.Combine(Path.GetDirectoryName(source)!,
-                Path.GetFileNameWithoutExtension(source) + ".Patch.exe");
-            if (Path.GetFileNameWithoutExtension(source).EndsWith(".Patch", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("目标程序不能是补丁副本。");
-
             patchStarted = true;
             var target = profiles.Identify(source);
+            var output = Path.Combine(Path.GetDirectoryName(source)!,
+                Path.GetFileNameWithoutExtension(source) + ".Patch.exe");
             RunLog.Info($"识别为 {target.Program} {target.Version}，输出路径：{output}");
             var temporary = output + ".tmp";
             try
             {
+                if (profiles.IsPatched(target))
+                    throw new InvalidDataException("目标程序内容已包含补丁，不能作为原程序再次修补。");
                 if (target.Bundle != null)
                 {
                     RunLog.Info("开始修补单文件 bundle。");
-                    PclCePatch.Apply(target);
+                    BundlePatch.Apply(target);
                     File.WriteAllBytes(temporary, target.Bundle.Data);
                 }
                 else
                 {
                     RunLog.Info("开始修补托管程序集。");
-                    PclPatch.Apply(target);
+                    AssemblyPatch.Apply(target);
                     target.Assembly.Write(temporary);
                 }
                 RunLog.Info("补丁已写入，开始验证。");

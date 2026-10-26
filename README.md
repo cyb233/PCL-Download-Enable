@@ -19,6 +19,8 @@
 
 程序识别、版本区间和 IL 匹配规则位于 [`patch-profiles.json`](./patch-profiles.json)。配置随 exe 一起嵌入；适配新版本后需重新编译。
 
+补丁动作使用通用的 IL 操作描述。`behavior` 只表示修改方式，具体目标由 `selectors`、`start`、`end`、`code` 和 `append` 定义；`note` 说明该动作的目的。指令操作数可引用 `field:类型::字段`、`method:类型::方法/参数数`、`local:索引`、`arg:索引`、`i4:数值`、`str:文本` 和 `label:名称`。适配新的程序版本时，通常只需新增或调整版本配置和指令序列，不需要在补丁执行器中增加程序功能分支。
+
 https://github.com/Meloong-Git/PCL/discussions/9512  
 https://github.com/PCL-Community/PCL-CE/discussions/3670
 

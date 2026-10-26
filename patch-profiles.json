@@ -3,47 +3,1118 @@
     "[2.99.0.0,2.99.0.0]": {
       "format": "assembly",
       "assembly": "Plain Craft Launcher 2",
-      "fileNames": ["Plain Craft Launcher 2.exe"],
-      "signature": { "type": "PCL.ModSecret", "member": "RestrictMcDownload" },
+      "fileNames": [
+        "Plain Craft Launcher 2.exe"
+      ],
+      "signature": {
+        "type": "PCL.ModSecret",
+        "member": "RestrictMcDownload"
+      },
       "actions": [
-        { "behavior": "setConstant", "selectors": { "type": "PCL.ModSecret", "field": "RestrictMcDownload", "value": "false" } },
-        { "behavior": "restoreLoader", "selectors": { "type": "PCL.PageDownloadInstall", "method": "LoaderInit", "parameters": "0", "marker": "关闭下载", "sourceType": "PCL.ModDownload", "sourceField": "DlClientListLoader", "constructorType": "LoaderTask" } },
-        { "behavior": "showCard", "selectors": { "type": "PCL.PageDownloadModify", "method": "LoadInstanceFinished", "parameters": "1", "setter": "set_Visibility", "fromValue": "2", "toValue": "0" } },
-        { "behavior": "restoreResourceInstall", "selectors": { "type": "PCL.PageDownloadResourceDetail", "method": "InitializeStackResourceVersions", "parameters": "1", "childrenGetter": "get_Children", "addMethod": "Add", "resourceField": "TargetResourceType", "resourceValue": "2", "installMethod": "Install_Click", "saveMethod": "Save_Click", "versionType": "PCL.ResourceVersion", "toListMethod": "ToListItem", "listClickType": "PCL.MyListItem/ClickEventHandler", "iconClickType": "PCL.MyIconButton/ClickEventHandler", "versionLocalType": "PCL.ResourceVersion", "hasDuplicatesLocal": "1" } },
-        { "behavior": "skipRestrictionBranch", "selectors": { "type": "PCL.FormMain/_Closure$__25-0", "method": "_Lambda$__0", "parameters": "0", "marker": "为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……", "branchOffset": "3" } },
-        { "behavior": "restoreModpackDispatch", "selectors": { "type": "PCL.ModModpack", "method": "ModpackInstall", "parameters": "3", "marker": "为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……", "kindLocal": "4", "resultLocal": "0", "archiveLocal": "1", "baseLocal": "2", "finallyStartOpcode": "Ldloc_1", "fallbackMethod": "InstallPackCompress" },
-          "cases": [
-            { "value": 0, "method": "InstallPackCurseForge", "parameters": 5 },
-            { "value": 1, "method": "InstallPackHMCL", "parameters": 3 },
-            { "value": 2, "method": "InstallPackMMC", "parameters": 3 },
-            { "value": 3, "method": "InstallPackMCBBS", "parameters": 4 },
-            { "value": 4, "method": "InstallPackModrinth", "parameters": 5 },
-            { "value": 9, "method": "InstallPackLauncherPack", "parameters": 3 }
-          ]
+        {
+          "behavior": "SetFieldConstant",
+          "note": "关闭 PCL 的下载限制开关.",
+          "selectors": {
+            "type": "PCL.ModSecret",
+            "field": "RestrictMcDownload",
+            "value": "false"
+          }
+        },
+        {
+          "behavior": "ReplaceInstructionRange",
+          "note": "用现有下载加载器替换被禁用的初始化指令.",
+          "selectors": {
+            "type": "PCL.PageDownloadInstall",
+            "method": "LoaderInit",
+            "parameters": "0"
+          },
+          "code": [
+            {
+              "opCode": "Ldsfld",
+              "operand": "field:PCL.ModDownload::DlClientListLoader"
+            }
+          ],
+          "start": {
+            "opCode": "Ldstr",
+            "operand": "str:关闭下载"
+          },
+          "end": {
+            "opCode": "Newobj",
+            "declaringType": "LoaderTask",
+            "inclusive": true
+          }
+        },
+        {
+          "behavior": "ReplaceConstant",
+          "note": "把版本修改卡片的隐藏状态改为可见.",
+          "selectors": {
+            "type": "PCL.PageDownloadModify",
+            "method": "LoadInstanceFinished",
+            "parameters": "1"
+          },
+          "code": [
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:0"
+            }
+          ],
+          "start": {
+            "operand": "i4:2"
+          },
+          "end": {
+            "member": "set_Visibility"
+          }
+        },
+        {
+          "behavior": "InsertInstructionSequence",
+          "note": "为资源版本列表插入安装和保存按钮回调.",
+          "selectors": {
+            "type": "PCL.PageDownloadResourceDetail",
+            "method": "InitializeStackResourceVersions",
+            "parameters": "1"
+          },
+          "code": [
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldfld",
+              "operand": "field:PCL.PageDownloadResourceDetail::TargetResourceType"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:2"
+            },
+            {
+              "opCode": "Bne_Un_S",
+              "operand": "existing:Callvirt:Add"
+            },
+            {
+              "opCode": "Ldarg_1"
+            },
+            {
+              "opCode": "Callvirt",
+              "operand": "existing:Callvirt:get_Children"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldftn",
+              "operand": "method:PCL.PageDownloadResourceDetail::Install_Click/2"
+            },
+            {
+              "opCode": "Newobj",
+              "operand": "method:PCL.MyListItem/ClickEventHandler::.ctor/2"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldftn",
+              "operand": "method:PCL.PageDownloadResourceDetail::Save_Click/2"
+            },
+            {
+              "opCode": "Newobj",
+              "operand": "method:PCL.MyIconButton/ClickEventHandler::.ctor/2"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Callvirt",
+              "operand": "method:PCL.ResourceVersion::ToListItem/3"
+            },
+            {
+              "opCode": "Br_S",
+              "operand": "existing:Callvirt:Add"
+            }
+          ],
+          "start": {
+            "opCode": "Ldarg_1",
+            "nextMember": "get_Children"
+          }
+        },
+        {
+          "behavior": "ReplaceBranch",
+          "note": "跳过主页下载限制判断，继续执行原下载入口.",
+          "selectors": {
+            "type": "PCL.FormMain/_Closure$__25-0",
+            "method": "_Lambda$__0",
+            "parameters": "0"
+          },
+          "code": [
+            {
+              "opCode": "Br_S"
+            }
+          ],
+          "start": {
+            "opCode": "Ldstr",
+            "operand": "str:为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……",
+            "offset": 3
+          }
+        },
+        {
+          "behavior": "ReplaceInstructionRange",
+          "note": "按整合包类型调用对应安装方法，并保留压缩包兜底逻辑.",
+          "selectors": {
+            "type": "PCL.ModModpack",
+            "method": "ModpackInstall",
+            "parameters": "3"
+          },
+          "code": [
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:0"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:1"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:2"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case2"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:3"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case3"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:4"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case4"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:9"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case5"
+            },
+            {
+              "opCode": "Br",
+              "operand": "label:fallback"
+            },
+            {
+              "opCode": "",
+              "label": "case0"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Ldarg_1"
+            },
+            {
+              "opCode": "Ldarg_2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackCurseForge/5"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "case1"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackHMCL/3"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "case2"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackMMC/3"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "case3"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Ldarg_1"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackMCBBS/4"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "case4"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Ldarg_1"
+            },
+            {
+              "opCode": "Ldarg_2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackModrinth/5"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "case5"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackLauncherPack/3"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "fallback"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackCompress/2"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            }
+          ],
+          "append": [
+            {
+              "opCode": "",
+              "label": "result"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Ret"
+            }
+          ],
+          "start": {
+            "opCode": "Ldstr",
+            "operand": "str:为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……"
+          },
+          "end": {
+            "opCode": "Ldloc_1"
+          }
+        },
+        {
+          "behavior": "ClearParameterConstants",
+          "note": "清除旧版单文件程序中引用缺失类型的参数默认常量.",
+          "selectors": {
+            "scope": "assembly"
+          }
         }
       ]
     },
     "[2.99.0.1,99.99.99.99]": {
       "format": "assembly",
       "assembly": "Plain Craft Launcher 2",
-      "fileNames": ["Plain Craft Launcher 2.exe"],
-      "signature": { "type": "PCL.ModSecret", "member": "RestrictMcDownload" },
+      "fileNames": [
+        "Plain Craft Launcher 2.exe"
+      ],
+      "signature": {
+        "type": "PCL.ModSecret",
+        "member": "RestrictMcDownload"
+      },
       "actions": [
-        { "behavior": "setConstant", "selectors": { "type": "PCL.ModSecret", "field": "RestrictMcDownload", "value": "false" } },
-        { "behavior": "restoreDownloadSidebar", "selectors": { "type": "PCL.PageDownloadLeft", "method": ".ctor", "parameters": "0" } },
-        { "behavior": "restoreLoader", "selectors": { "type": "PCL.PageDownloadInstall", "method": "LoaderInit", "parameters": "0", "marker": "关闭下载", "sourceType": "PCL.ModDownload", "sourceField": "DlClientListLoader", "constructorType": "LoaderTask" } },
-        { "behavior": "showCard", "selectors": { "type": "PCL.PageDownloadModify", "method": "LoadInstanceFinished", "parameters": "1", "setter": "set_Visibility", "fromValue": "2", "toValue": "0" } },
-        { "behavior": "restoreResourceInstall", "selectors": { "type": "PCL.PageDownloadResourceDetail", "method": "InitializeStackResourceVersions", "parameters": "1", "childrenGetter": "get_Children", "addMethod": "Add", "resourceField": "TargetResourceType", "resourceValue": "2", "installMethod": "Install_Click", "saveMethod": "Save_Click", "versionType": "PCL.ResourceVersion", "toListMethod": "ToListItem", "listClickType": "PCL.MyListItem/ClickEventHandler", "iconClickType": "PCL.MyIconButton/ClickEventHandler", "versionLocalType": "PCL.ResourceVersion", "hasDuplicatesLocal": "1" } },
-        { "behavior": "restoreManualModpackInstall", "selectors": { "type": "PCL.ModModpack", "method": "ModpackInstall", "parameters": "0", "marker": "为遵守相关法律法规，PCL 不再提供 MC 下载功能，非常抱歉 qwq……", "workerType": "PCL.ModModpack/_Closure$__0-0", "workerMethod": "_Lambda$__0", "fileField": "$VB$Local_File", "title": "选择整合包文件", "filter": "整合包文件|*.zip;*.mrpack;*.jar;*.mcbbs|所有文件|*.*", "threadName": "整合包安装" } },
-        { "behavior": "restoreModpackDispatch", "selectors": { "type": "PCL.ModModpack", "method": "ModpackInstall", "parameters": "3", "marker": "为遵守相关法律法规，PCL 不再提供 MC 下载功能，非常抱歉 qwq……", "kindLocal": "4", "resultLocal": "0", "archiveLocal": "1", "baseLocal": "2", "finallyStartOpcode": "Ldloc_1", "fallbackMethod": "InstallPackCompress" },
-          "cases": [
-            { "value": 0, "method": "InstallPackCurseForge", "parameters": 5 },
-            { "value": 1, "method": "InstallPackHMCL", "parameters": 3 },
-            { "value": 2, "method": "InstallPackMMC", "parameters": 3 },
-            { "value": 3, "method": "InstallPackMCBBS", "parameters": 4 },
-            { "value": 4, "method": "InstallPackModrinth", "parameters": 5 },
-            { "value": 9, "method": "InstallPackLauncherPack", "parameters": 3 }
+        {
+          "behavior": "SetFieldConstant",
+          "note": "关闭 PCL 的下载限制开关.",
+          "selectors": {
+            "type": "PCL.ModSecret",
+            "field": "RestrictMcDownload",
+            "value": "false"
+          }
+        },
+        {
+          "behavior": "ReplaceInstructionRange",
+          "note": "重新初始化下载侧栏中的可用入口.",
+          "selectors": {
+            "type": "PCL.PageDownloadLeft",
+            "method": ".ctor",
+            "parameters": "0"
+          },
+          "code": [
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Call",
+              "operand": "existing:Call:InitializeComponent"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Callvirt",
+              "operand": "existing:Callvirt:get_ItemInstall"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:2"
+            },
+            {
+              "opCode": "Callvirt",
+              "operand": "existing:Callvirt:set_Visibility"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Callvirt",
+              "operand": "existing:Callvirt:get_LabResource"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:2"
+            },
+            {
+              "opCode": "Callvirt",
+              "operand": "existing:Callvirt:set_Visibility"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:2"
+            },
+            {
+              "opCode": "Stfld",
+              "operand": "existing:Stfld:PageID"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Callvirt",
+              "operand": "existing:Callvirt:get_ItemMod"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:1"
+            },
+            {
+              "opCode": "Callvirt",
+              "operand": "existing:Callvirt:set_Checked"
+            },
+            {
+              "opCode": "Ret"
+            }
+          ],
+          "start": {
+            "member": "InitializeComponent"
+          },
+          "end": {
+            "opCode": "Ret",
+            "inclusive": true
+          }
+        },
+        {
+          "behavior": "ReplaceInstructionRange",
+          "note": "用现有下载加载器替换被禁用的初始化指令.",
+          "selectors": {
+            "type": "PCL.PageDownloadInstall",
+            "method": "LoaderInit",
+            "parameters": "0"
+          },
+          "code": [
+            {
+              "opCode": "Ldsfld",
+              "operand": "field:PCL.ModDownload::DlClientListLoader"
+            }
+          ],
+          "start": {
+            "opCode": "Ldstr",
+            "operand": "str:关闭下载"
+          },
+          "end": {
+            "opCode": "Newobj",
+            "declaringType": "LoaderTask",
+            "inclusive": true
+          }
+        },
+        {
+          "behavior": "ReplaceConstant",
+          "note": "把版本修改卡片的隐藏状态改为可见.",
+          "selectors": {
+            "type": "PCL.PageDownloadModify",
+            "method": "LoadInstanceFinished",
+            "parameters": "1"
+          },
+          "code": [
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:0"
+            }
+          ],
+          "start": {
+            "operand": "i4:2"
+          },
+          "end": {
+            "member": "set_Visibility"
+          }
+        },
+        {
+          "behavior": "InsertInstructionSequence",
+          "note": "为资源版本列表插入安装和保存按钮回调.",
+          "selectors": {
+            "type": "PCL.PageDownloadResourceDetail",
+            "method": "InitializeStackResourceVersions",
+            "parameters": "1"
+          },
+          "code": [
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldfld",
+              "operand": "field:PCL.PageDownloadResourceDetail::TargetResourceType"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:2"
+            },
+            {
+              "opCode": "Bne_Un_S",
+              "operand": "existing:Callvirt:Add"
+            },
+            {
+              "opCode": "Ldarg_1"
+            },
+            {
+              "opCode": "Callvirt",
+              "operand": "existing:Callvirt:get_Children"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldftn",
+              "operand": "method:PCL.PageDownloadResourceDetail::Install_Click/2"
+            },
+            {
+              "opCode": "Newobj",
+              "operand": "method:PCL.MyListItem/ClickEventHandler::.ctor/2"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldftn",
+              "operand": "method:PCL.PageDownloadResourceDetail::Save_Click/2"
+            },
+            {
+              "opCode": "Newobj",
+              "operand": "method:PCL.MyIconButton/ClickEventHandler::.ctor/2"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Callvirt",
+              "operand": "method:PCL.ResourceVersion::ToListItem/3"
+            },
+            {
+              "opCode": "Br_S",
+              "operand": "existing:Callvirt:Add"
+            }
+          ],
+          "start": {
+            "opCode": "Ldarg_1",
+            "nextMember": "get_Children"
+          }
+        },
+        {
+          "behavior": "ReplaceMethodBody",
+          "note": "恢复手动选择整合包文件并启动安装任务.",
+          "selectors": {
+            "type": "PCL.ModModpack",
+            "method": "ModpackInstall",
+            "parameters": "0"
+          },
+          "code": [
+            {
+              "opCode": "Newobj",
+              "operand": "method:PCL.ModModpack/_Closure$__0-0::.ctor/0"
+            },
+            {
+              "opCode": "Stloc_0"
+            },
+            {
+              "opCode": "Ldloc_0"
+            },
+            {
+              "opCode": "Ldstr",
+              "operand": "str:选择整合包文件"
+            },
+            {
+              "opCode": "Ldc_I4_0"
+            },
+            {
+              "opCode": "Ldnull"
+            },
+            {
+              "opCode": "Ldstr",
+              "operand": "str:整合包文件|*.zip;*.mrpack;*.jar;*.mcbbs|所有文件|*.*"
+            },
+            {
+              "opCode": "Call",
+              "operand": "ref:MeloongCore.OneOf::op_Implicit"
+            },
+            {
+              "opCode": "Newobj",
+              "operand": "ref:System.Nullable::.ctor"
+            },
+            {
+              "opCode": "Call",
+              "operand": "ref:MeloongCore.Wpf.Dialogs::SelectFile"
+            },
+            {
+              "opCode": "Call",
+              "operand": "ref:System.Linq.Enumerable::FirstOrDefault"
+            },
+            {
+              "opCode": "Stfld",
+              "operand": "field:PCL.ModModpack/_Closure$__0-0::$VB$Local_File"
+            },
+            {
+              "opCode": "Ldloc_0"
+            },
+            {
+              "opCode": "Ldfld",
+              "operand": "field:PCL.ModModpack/_Closure$__0-0::$VB$Local_File"
+            },
+            {
+              "opCode": "Call",
+              "operand": "ref:System.String::IsNullOrEmpty"
+            },
+            {
+              "opCode": "Brtrue",
+              "operand": "label:done"
+            },
+            {
+              "opCode": "Ldloc_0"
+            },
+            {
+              "opCode": "Ldftn",
+              "operand": "method:PCL.ModModpack/_Closure$__0-0::_Lambda$__0/0"
+            },
+            {
+              "opCode": "Newobj",
+              "operand": "ref:System.Action::.ctor"
+            },
+            {
+              "opCode": "Ldstr",
+              "operand": "str:整合包安装"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "ref:PCL.ModBase::RunInNewThread"
+            },
+            {
+              "opCode": "Pop"
+            },
+            {
+              "opCode": "",
+              "label": "done"
+            },
+            {
+              "opCode": "Ret"
+            }
           ]
+        },
+        {
+          "behavior": "ReplaceInstructionRange",
+          "note": "按整合包类型调用对应安装方法，并保留压缩包兜底逻辑.",
+          "selectors": {
+            "type": "PCL.ModModpack",
+            "method": "ModpackInstall",
+            "parameters": "3"
+          },
+          "code": [
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:0"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:1"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:2"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case2"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:3"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case3"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:4"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case4"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:4"
+            },
+            {
+              "opCode": "Ldc_I4",
+              "operand": "i4:9"
+            },
+            {
+              "opCode": "Beq",
+              "operand": "label:case5"
+            },
+            {
+              "opCode": "Br",
+              "operand": "label:fallback"
+            },
+            {
+              "opCode": "",
+              "label": "case0"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Ldarg_1"
+            },
+            {
+              "opCode": "Ldarg_2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackCurseForge/5"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "case1"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackHMCL/3"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "case2"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackMMC/3"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "case3"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Ldarg_1"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackMCBBS/4"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "case4"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Ldarg_1"
+            },
+            {
+              "opCode": "Ldarg_2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackModrinth/5"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "case5"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:2"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackLauncherPack/3"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            },
+            {
+              "opCode": "",
+              "label": "fallback"
+            },
+            {
+              "opCode": "Ldarg_0"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:1"
+            },
+            {
+              "opCode": "Call",
+              "operand": "method:PCL.ModModpack::InstallPackCompress/2"
+            },
+            {
+              "opCode": "Stloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Leave",
+              "operand": "label:result"
+            }
+          ],
+          "append": [
+            {
+              "opCode": "",
+              "label": "result"
+            },
+            {
+              "opCode": "Ldloc",
+              "operand": "local:0"
+            },
+            {
+              "opCode": "Ret"
+            }
+          ],
+          "start": {
+            "opCode": "Ldstr",
+            "operand": "str:为遵守相关法律法规，PCL 不再提供 MC 下载功能，非常抱歉 qwq……"
+          },
+          "end": {
+            "opCode": "Ldloc_1"
+          }
+        },
+        {
+          "behavior": "ClearParameterConstants",
+          "note": "清除旧版单文件程序中引用缺失类型的参数默认常量.",
+          "selectors": {
+            "scope": "assembly"
+          }
         }
       ]
     }
@@ -53,10 +1124,34 @@
       "format": "bundle",
       "assembly": "Plain Craft Launcher 2",
       "bundleEntry": "Plain Craft Launcher 2.dll",
-      "fileNames": ["PCL2_CE_Release_x64.exe"],
-      "signature": { "type": "PCL.RestrictedFeaturePolicy", "member": "Check" },
+      "fileNames": [
+        "PCL2_CE_Release_x64.exe"
+      ],
+      "signature": {
+        "type": "PCL.RestrictedFeaturePolicy",
+        "member": "Check"
+      },
       "actions": [
-        { "behavior": "returnTrue", "selectors": { "type": "PCL.RestrictedFeaturePolicy", "method": "Check", "parameters": "2", "firstOpcode": "Call", "firstCall": "Assess" } }
+        {
+          "behavior": "SetMethodReturnValue",
+          "note": "让功能策略检查直接返回配置指定的结果.",
+          "selectors": {
+            "type": "PCL.RestrictedFeaturePolicy",
+            "method": "Check",
+            "parameters": "2",
+            "value": "true",
+            "firstOpcode": "Call",
+            "firstCall": "Assess"
+          },
+          "code": [
+            {
+              "opCode": "Ldc_I4_1"
+            },
+            {
+              "opCode": "Ret"
+            }
+          ]
+        }
       ]
     }
   }

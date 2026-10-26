@@ -36,7 +36,16 @@ internal sealed class PatchProfiles
                         string.IsNullOrWhiteSpace(profile.Assembly) ||
                         (profile.Format != "assembly" && profile.Format != "bundle") ||
                         (profile.Format == "bundle" && string.IsNullOrWhiteSpace(profile.BundleEntry)) ||
-                        profile.Actions == null || profile.Actions.Length == 0)
+                        profile.Actions == null || profile.Actions.Length == 0 ||
+                        profile.Actions.Any(action => action == null || action.Behavior == PatchBehavior.Unknown ||
+                            string.IsNullOrWhiteSpace(action.Note) ||
+                            ((action.Behavior == PatchBehavior.SetMethodReturnValue ||
+                              action.Behavior == PatchBehavior.ReplaceConstant ||
+                              action.Behavior == PatchBehavior.ReplaceBranch ||
+                              action.Behavior == PatchBehavior.ReplaceMethodBody ||
+                              action.Behavior == PatchBehavior.InsertInstructionSequence ||
+                              action.Behavior == PatchBehavior.ReplaceInstructionRange) &&
+                             (action.Code == null || action.Code.Length == 0))))
                         throw new InvalidDataException($"补丁配置无效：{program.Key} {pair.Key}");
                 }
             return new PatchProfiles(data);
@@ -92,9 +101,27 @@ internal sealed class PatchProfiles
         {
             if (patched.Program != original.Program || patched.Version != original.Version)
                 throw new InvalidDataException("补丁副本的程序或版本发生变化。" );
-            if (patched.Bundle != null) PclCePatch.Verify(patched);
-            else PclPatch.Verify(patched);
+            VerifyPatched(patched);
         }
+    }
+
+    internal bool IsPatched(PatchTarget target)
+    {
+        try
+        {
+            VerifyPatched(target);
+            return true;
+        }
+        catch (InvalidDataException)
+        {
+            return false;
+        }
+    }
+
+    private static void VerifyPatched(PatchTarget target)
+    {
+        if (target.Bundle != null) BundlePatch.Verify(target);
+        else AssemblyPatch.Verify(target);
     }
 
     private static bool MatchesIdentity(PatchProfile profile, AssemblyDefinition assembly, bool isBundle)
@@ -169,22 +196,25 @@ public sealed class PatchSignature
 public enum PatchBehavior
 {
     Unknown,
-    setConstant,
-    restoreLoader,
-    showCard,
-    restoreResourceInstall,
-    skipRestrictionBranch,
-    restoreModpackDispatch,
-    restoreDownloadSidebar,
-    restoreManualModpackInstall,
-    returnTrue
+    SetFieldConstant,
+    SetMethodReturnValue,
+    ReplaceConstant,
+    ReplaceInstructionRange,
+    InsertInstructionSequence,
+    ReplaceBranch,
+    ReplaceMethodBody,
+    ClearParameterConstants
 }
 
 public sealed class PatchAction
 {
     public PatchBehavior Behavior { get; set; }
+    public string Note { get; set; } = "";
+    public PatchCode[] Code { get; set; } = new PatchCode[0];
+    public PatchCode[] Append { get; set; } = new PatchCode[0];
+    public PatchPattern Start { get; set; } = new PatchPattern();
+    public PatchPattern End { get; set; } = new PatchPattern();
     public Dictionary<string, string> Selectors { get; set; } = new Dictionary<string, string>();
-    public PatchCase[] Cases { get; set; } = new PatchCase[0];
 
     public string Get(string name)
     {
@@ -194,9 +224,20 @@ public sealed class PatchAction
     }
 }
 
-public sealed class PatchCase
+public sealed class PatchCode
 {
-    public int Value { get; set; }
-    public string Method { get; set; } = "";
-    public int Parameters { get; set; }
+    public string OpCode { get; set; } = "";
+    public string Operand { get; set; } = "";
+    public string Label { get; set; } = "";
+}
+
+public sealed class PatchPattern
+{
+    public string OpCode { get; set; } = "";
+    public string Operand { get; set; } = "";
+    public string Member { get; set; } = "";
+    public string DeclaringType { get; set; } = "";
+    public string NextMember { get; set; } = "";
+    public int Offset { get; set; }
+    public bool Inclusive { get; set; }
 }
